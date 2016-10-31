@@ -11,6 +11,7 @@ Your program should print out k-flat subsequence with the maximum length. If th
 Example:
 
 For sample input:
+
  
 6 3
 
