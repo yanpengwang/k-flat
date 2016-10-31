@@ -9,6 +9,7 @@ Output: (standard output)
 Your program should print out k-flat subsequence with the maximum length. If there are more than one solution, print the one for which the last element has the smallest index, if there are more than one such solutions, print the one for which the next to last has the smallest index, etc.
 
 Example:
+
 For sample input:
  
 6 3
