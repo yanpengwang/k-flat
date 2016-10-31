@@ -12,6 +12,7 @@ Example:
 For sample input:
  
 6 3
+
 2 9 7 2 5 8
 
 a correct output format:
