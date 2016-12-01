@@ -7,7 +7,7 @@ using namespace std;
 struct Range {
 	Range *parent;
 	int number;
-	int begin;
+	int begin; // note: begin and end will adjust during calculation
 	int end; // one past end
 	int rank;
 	void set(Range *parent, int number, int begin, int end) {
@@ -44,10 +44,9 @@ struct Ranges {
 	 * Find the range which contains given number or return null.
 	 */
 	Range* find(int number) {
-		toFind.begin = number;
+		toFind.begin = number;  // note: search with number not number - k
 		iterator I = ranges.upper_bound(&toFind);
-	
-				
+					
 		if (I != ranges.begin()) {
 			I--;
 		}
@@ -69,13 +68,12 @@ struct Ranges {
 		if (I != ranges.begin()) {
 			I--;
 		}
-		while (I != ranges.end() && (*I)->begin < range->end) {
-		
+		while (I != ranges.end() && (*I)->begin < range->end) {	
 			if ((*I)->end <= range->begin) {
-		
-						++I;
+				++I;
 				continue;
 			}
+			// the new range has higher rank, so its range will overwrite (*I)'s
 			if ((*I)->rank < range->rank) {
 				// (*I) is partially on the left, partially on the right, or completely inside
 				if ((*I)->begin < range->begin) {
@@ -87,6 +85,8 @@ struct Ranges {
 					continue;
 				}
 			} else {
+			// the new range don't has higher rank, according to requirement, (*I)'s range 
+		        // will be used for later coming ranges
 				if (range->begin < (*I)->begin || range->end <= (*I)->end) {
 					range->end = (*I)->begin;
 				} else {
