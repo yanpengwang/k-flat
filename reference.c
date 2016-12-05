@@ -1,4 +1,4 @@
-// another implementation by others
+// another implementation with C++ set
 #include <cstdio>
 #include <assert.h>
 #include <set>
