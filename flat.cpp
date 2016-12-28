@@ -1,136 +1,165 @@
-// another implementation with C++ set
-#include <cstdio>
-#include <assert.h>
-#include <set>
-#include <sys/time.h>  
+/*************************************************************************
+	> File Name: flat.cpp
+	> Author: wang yanpeng
+	> Mail: wangyanpeng@gmail.com 
+	> Created Time: 2016年12月27日 星期二 11时46分58秒
+ ************************************************************************/
+
+#include<iostream>
+#include<set>
 using namespace std;
-struct Range {
-	Range *parent;
-	int number;
-	int begin; // note: begin and end will adjust during calculation
-	int end; // one past end
-	int rank;
-	void set(Range *parent, int number, int begin, int end) {
-		this->parent = parent;
-		this->number = number;
-		this->begin = begin;
-		this->end = end;
-		
-		if (parent == NULL) {
-			rank = 1;
-		} else {
-			rank = parent->rank + 1;
-		}
-	}
+
+class Range 
+{
+public:
+    Range()
+    {
+        parent = NULL; number = begin = end = rank = 0;
+    }
+
+    void setval(Range * prt, int nb, int bgn, int ed)
+    {
+        parent = prt;
+        number = nb;
+        begin = bgn;
+        end = ed;
+        if (parent == NULL) 
+            rank = 1;
+        else
+            rank = parent->rank + 1;
+    }
+
+    Range * parent; // point to my precedent node within k-flat sequence
+    int    number; // the input number of current node
+    int    begin;  // starting point of my range, may change
+    int    end;    // starting point of my range, may change
+    int    rank;   // my rank in current k-flat sequence
 };
-struct comparator {
-	bool operator()(const Range* i1, Range* i2) const {
-		return i1->begin < i2->begin;
-	}
+
+// Define a comparator, to be used by set<Range*, RangeComp> in class Ranges.
+class RangeComp
+{
+public:
+    bool operator()(const Range * r1, const Range * r2) const
+    {
+        // compare the begin value
+        return r1->begin < r2->begin;    
+    }
+
 };
-/*
- * Define len(i) as the length of the longest k-flat subsequence ending at any number in (i-k, i+k)
- *
- * There is Theorem I:
- * For any i there is a vicinity (i-x, i+y), x+y>=2*k such that for any j in (i-x, i+y) there is len(j) >= len(i)
- *
- * We describe len(i) as a set or ranges.
- */
-struct Ranges {
-	set<Range*, comparator> ranges;
-	typedef set<Range*, comparator>::iterator iterator;
-	static Range toFind;
-	/*
-	 * Find the range which contains given number or return null.
-	 */
-	Range* find(int number) {
-		toFind.begin = number;  // note: search with number not number - k
-		iterator I = ranges.upper_bound(&toFind);
-					
-		if (I != ranges.begin()) {
-			I--;
-		}
-		if (I == ranges.end()) {
-//			printf("%d", number);
-			return NULL;
-		}
-		Range *result = *I;
-		if (result->begin <= number && number < result->end) {
-			return result;
-		}
-		return NULL;
-	}
-	/*
-	 * Add new range to the set
-	 */
-	void add(Range *range) {
-		iterator I = ranges.upper_bound(range);
-		if (I != ranges.begin()) {
-			I--;
-		}
-		while (I != ranges.end() && (*I)->begin < range->end) {	
-			if ((*I)->end <= range->begin) {
-				++I;
-				continue;
-			}
-			// the new range has higher rank, so its range will overwrite (*I)'s
-			if ((*I)->rank < range->rank) {
-				// (*I) is partially on the left, partially on the right, or completely inside
-				if ((*I)->begin < range->begin) {
-					(*I)->end = range->begin;
-				} else if (range->end < (*I)->end) {
-					(*I)->begin = range->end;
-				} else {
-					ranges.erase(I++);
-					continue;
-				}
-			} else {
-			// the new range don't has higher rank, according to requirement, (*I)'s range 
-		        // will be used for later coming ranges
-				if (range->begin < (*I)->begin || range->end <= (*I)->end) {
-					range->end = (*I)->begin;
-				} else {
-					range->begin = (*I)->end;
-				}
-			}
-			++I;
-		}
-		// sequence cannot be shortened to 0-length
-		//assert(range->begin < range->end);
-		ranges.insert(range);
-	}
-	void print() {
-		iterator I  = ranges.begin();
-		while (I != ranges.end()) {
-			fprintf(stderr, "(%d, %d)^%d_%d ", (*I)->begin, (*I)->end - 1, (*I)->number, (*I)->rank);
-			I++;
-		}
-		fprintf(stderr, "\n");
-	}
+
+class Ranges
+{
+public:
+    // set ranges will store 
+    set<Range *, RangeComp> range_set;
+    typedef set<Range *, RangeComp>::iterator iterator;
+    // toFind is used to find the new node within range_set
+    static Range toFind;
+    // Find the range which contains given number or return null.
+    Range * find(int number)
+    {
+        toFind.begin = number; // note: set begin with number to search
+        iterator I = range_set.upper_bound(&toFind);
+
+        if (I != range_set.begin()) I--;
+
+        // because range_set's size >=1, so "I" couldn't equal to range_set.end()
+        Range * result = *I;
+        if(result->begin <= number && result->end > number)
+            return result;
+        return NULL;
+    }
+
+    // Add range to range_set
+    void add(Range *new_range)
+    {
+        iterator I = range_set.upper_bound(new_range);
+        if (I != range_set.begin()) I--;
+
+        /* traverse all the nodes untill *I's begin >=range->end */
+        while(I != range_set.end() && (*I)->begin < new_range->end)
+        {
+            // find the first overlapping range
+            if ((*I)->end <= new_range->begin) 
+            {
+                I++;
+                continue;
+            }
+
+            /*
+             * if new_range's rank is higher, to get the longest sequence, 
+             * replace (*I)'s range with new_range's
+             */
+            if(new_range->rank > (*I)->rank)
+            {
+                if(new_range->begin > (*I)->begin)
+                    /*
+                     *          new_range:    |------|
+                     *       (*I)'s range: |-----| 
+                     */
+                    (*I)->end = new_range->begin;
+                else if(new_range->end < (*I)->end)
+                    /*
+                     *          new_range:    |------|
+                     *       (*I)'s range:      |-----| 
+                     */
+                    (*I)->begin = new_range->end;
+                else
+                    /*
+                     *          new_range:    |------|
+                     *       (*I)'s range:      |---| 
+                     */
+                {
+                    range_set.erase(I++);
+                    continue;
+                }
+            } else {
+            /*
+             * the new range doesn't has higher rank, according to 
+             * requirement, (*I)'s range will be used for later 
+             * coming ranges
+             */
+                if(new_range->begin < (*I)->begin || new_range->end <= (*I)->end)
+                    new_range->end = (*I)->begin;
+                else
+                    new_range->begin = (*I)->end;
+            }
+            I++;
+        } //end of while
+        range_set.insert(new_range);
+    } //end of add()
 };
+
 Range Ranges::toFind;
-int main(int argc, char *argv[]) {
-//hrtime_t  time_start,time_now,time_used;
-//time_start =  gethrtime();
-	int n, k;
-	scanf("%d %d", &n, &k);
+
+int main() 
+{
+	int n, k, number;
+    cin >> n >> k;
 	Ranges ranges;
 	Range *max = NULL;
-	Range slab[100000]; // slab to speedup memory allocations, gives 0.3s on max test
-	for (int i=0; i<n; i++) {
-		int number;
-		scanf("%d", &number);
-//
-//fprintf(stderr, "Number: %d\n", number);
-		Range *parent = ranges.find(number);
-		Range *range = &slab[i];
-		range->set(parent, number, number - k, number + k + 1);
+	Range slab[100000]; // slab to speedup memory allocations
+    Range *range, *parent;
+    if (n >= 1) 
+    {
+        cin >> number;
+		range = &slab[0];
+		range->setval(NULL, number, number - k, number + k + 1);
 		if (max == NULL || (max->rank < range->rank)) {
 			max = range;
 		}
 		ranges.add(range);
-//
-//ranges.print();
+    }
+	for (int i=1; i<n; i++) {
+        cin >> number;
+		parent = ranges.find(number);
+		range = &slab[i];
+		range->setval(parent, number, number - k, number + k + 1);
+		if (max == NULL || (max->rank < range->rank)) {
+			max = range;
+		}
+		ranges.add(range);
 	}
 	int result[max->rank];
 	int rank = max->rank;
@@ -140,23 +169,10 @@ int main(int argc, char *argv[]) {
 		max = max->parent;
 		i--;
 	}
-	i++;
-	// assert(i==0);
-		typedef set<Range*, comparator>::iterator iterator;
-	iterator I = ranges.ranges.begin();
-	while (I != ranges.ranges.end())
-	{
-		//printf("number=%d ,rank=%d ,begin=%d ,end=%d \n", (*I)->number, (*I)->rank, (*I)->begin, (*I)->end);
-		I++;
-	}
+    i = 0;
 	while (i < rank) {
-		printf("%d ", result[i]);
+		cout << result[i] <<endl;
 		i++;
 	}
-		//	time_now =  gethrtime();
-		//time_used = time_now-time_start; 
-	
-		//printf("\nTime used is:%lld ms\n",time_used/1000000);
-    printf("\n");
-	return 0;
+    return 0;
 }
