@@ -135,44 +135,46 @@ Range Ranges::toFind;
 
 int main() 
 {
-	int n, k, number;
+    int n, k, number;
     cin >> n >> k;
-	Ranges ranges;
-	Range *max = NULL;
-	Range slab[100000]; // slab to speedup memory allocations
+    Ranges ranges;
+    Range *max = NULL;
+    Range slab[100000]; // slab to speedup memory allocations
     Range *range, *parent;
     if (n >= 1) 
     {
         cin >> number;
-		range = &slab[0];
-		range->setval(NULL, number, number - k, number + k + 1);
-		if (max == NULL || (max->rank < range->rank)) {
-			max = range;
-		}
-		ranges.add(range);
+	range = &slab[0];
+	range->setval(NULL, number, number - k, number + k + 1);
+	if (max == NULL || (max->rank < range->rank)) {
+		max = range;
+	}
+	ranges.add(range);
     }
-	for (int i=1; i<n; i++) {
-        cin >> number;
-		parent = ranges.find(number);
-		range = &slab[i];
-		range->setval(parent, number, number - k, number + k + 1);
-		if (max == NULL || (max->rank < range->rank)) {
-			max = range;
-		}
-		ranges.add(range);
+    for (int i=1; i<n; i++) {
+    	cin >> number;
+	parent = ranges.find(number);
+	range = &slab[i];
+	range->setval(parent, number, number - k, number + k + 1);
+	if (max == NULL || (max->rank < range->rank)) {
+		max = range;
 	}
-	int result[max->rank];
-	int rank = max->rank;
-	int i = rank - 1;
-	while (max != NULL) {
-		result[i] = max->number;
-		max = max->parent;
-		i--;
-	}
+	ranges.add(range);
+    }
+    
+    int result[max->rank];
+    int rank = max->rank;
+    int i = rank - 1;
+    while (max != NULL) {
+	result[i] = max->number;
+	max = max->parent;
+	i--;
+    }
+    
     i = 0;
-	while (i < rank) {
-		cout << result[i] <<endl;
-		i++;
-	}
+    while (i < rank) {
+	cout << result[i] <<endl;
+	i++;
+    }
     return 0;
 }
