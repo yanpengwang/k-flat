@@ -23,14 +23,14 @@
  */
 typedef struct Node
 {
-	int data_val;
+    int data_val;
     int cur_length;
     int degree; 
     int myindex;                           /* sequence number, from 1 to n */
     int min_k;                             /* left boundary = data_val - k */
     int max_k;                             /* right bounddary = data_val + k */
     int bf;                                /* balance factor */
-	struct Node * seqTree_leftchild;
+    struct Node * seqTree_leftchild;
     struct Node * seqTree_rightchild;
     struct Node * seqTree_parent;
     struct Node * nextprint;
@@ -66,8 +66,8 @@ void BBT_R_Rotate(pMyNode & root)
 void LeftBalance(pMyNode & root)     
 {
 
-	if (root->avl_leftchild == 0)
-		return;
+ if (root->avl_leftchild == 0)
+	return;
  pMyNode lc=root->avl_leftchild,rc=NULL;          
  if(lc->bf==1)                             
  {
