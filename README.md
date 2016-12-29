@@ -23,3 +23,7 @@ a correct output format:
 
 Hint: There are two 3-flat subsequences (k = 3) with four elements: 9 7 5 8 and 2 2 5 8. Both ends up with the same element (8), the next to last are also the same (5), but 7 is earlier (has smaller index) than 2 in the above example.
 
+===========
+With regard to the source code under /k-flat:
+flat.c - My original C code for the contest
+flat.cpp - later added C Plus Plus implementation
