@@ -89,7 +89,6 @@ class Ranges(object):
         self.begin_dic[allnodes[sequence].begin] = sequence
         # update the sorted key dictionary
         self.sorted_dic_key = sorted(self.begin_dic.keys())
-        # print "begin_dic=",self.begin_dic
 
 ###############################################################################
 
