@@ -25,7 +25,6 @@ Hint: There are two 3-flat subsequences (k = 3) with four elements: 9 7 5 8 and 
 
 ---------------
 
-
 With regard to the source code under /k-flat:
 
 flat.c - My original C code for the contest
